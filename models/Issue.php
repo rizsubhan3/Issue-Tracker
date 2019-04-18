@@ -40,8 +40,11 @@ class Issue extends \yii\db\ActiveRecord
             [['Description', 'Module_Id', 'Raised_By', 'Created_Date', 'Status'], 'required'],
             [['Description', 'Comments'], 'string'],
             [['Module_Id', 'Status','Assigned_To'], 'integer'],
-            [['Created_Date', 'Close_Date'], 'safe'],
-//            [['Closed_By'], 'string', 'max' => 50],
+            [['Created_Date','Close_Date'], 'safe'],
+//            [['Close_Date'],'required','when'=> function($model){
+//              return false;
+//             }
+//            ],
         ];
     }
 
@@ -94,8 +97,10 @@ class Issue extends \yii\db\ActiveRecord
     {
         if($this->imageFile)
         {
-            $this->imageFile->saveAs('uploads/' . $this->imageFile->baseName . '.'  . $this->imageFile->extension );
-            $this->File_Name = $this->imageFile->baseName . '.'  . $this->imageFile->extension  ;
+            $sql = 'Select max(id) from issue_attachment';
+            $fileId = Yii::$app->db->createCommand($sql)->queryScalar() + 1;
+            $this->imageFile->saveAs('uploads/' . $fileId . '.'  . $this->imageFile->extension );
+            $this->File_Name = $fileId . '.'  . $this->imageFile->extension  ;
             $this->File_Ext = $this->imageFile->extension;
         }
     }
