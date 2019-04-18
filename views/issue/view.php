@@ -103,7 +103,7 @@ $this->params['breadcrumbs'][] = $this->title;
               'value'=> function ($model) { 
                 if($model->Closed_By)
                 {
-                  return $model->closedBy->username ;
+                  return $model->closedBy->firstName ;
                 }
               }
             ],                                              
@@ -113,10 +113,10 @@ $this->params['breadcrumbs'][] = $this->title;
               'value'=>function ($model) {
               if($model->File_Name) 
               {
-                return Html::a($model['File_Name'], '../uploads/' . $model['File_Name'] );                    
+                return Html::a($model['File_Name'], '../uploads/' . $model['File_Name'],['target'=>'_blank'] );                    
               }
              },
-             'format' => 'html',
+             'format' => 'raw',
             ],
                                            
         ],
