@@ -3,12 +3,13 @@
 namespace app\controllers;
 
 use Yii;
+use app\components\CustomController;
 use app\models\Issue;
 use app\models\IssueSearch;
 use app\models\IssueAssignment;
 use app\models\IssueAttachment;
 
-use yii\web\Controller;
+//use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
@@ -16,7 +17,7 @@ use yii\web\UploadedFile;
 /**
  * IssueController implements the CRUD actions for Issue model.
  */
-class IssueController extends Controller
+class IssueController extends CustomController
 {
     /**
      * {@inheritdoc}
@@ -144,7 +145,8 @@ class IssueController extends Controller
         $model = $this->findModel($id);
         $commentsModel = new \app\models\IssueComment();
         $sql = sprintf("SELECT * FROM issue_assignment WHERE id = (select max(id) from issue_assignment where issue_id=%d) ",$id );
-        $assignmentModel = IssueAssignment::findBySql($sql)->one();
+        $assignmentModel = IssueAssignment::findBySql($sql)->one() ;
+        $assignmentModel = $assignmentModel == null ? new IssueAssignment(): $assignmentModel; 
         $oldAssignTo = $model->Assigned_To ;        
         
         if ($model->load(Yii::$app->request->post()) && $commentsModel->load(Yii::$app->request->post()) && $assignmentModel->load(Yii::$app->request->post()) ) {
@@ -163,7 +165,8 @@ class IssueController extends Controller
             $model->upload();
                         
             if($model->save())
-            {            
+            {                            
+                //if($model->Status == 2 && $model->getOldAttribute('Assigned_To') != $model->Assigned_To )
                 if($model->Status == 2 && $oldAssignTo != $model->Assigned_To )
                 {
                    $assignment = new IssueAssignment();
@@ -174,8 +177,7 @@ class IssueController extends Controller
                    $assignment->save();
                 }
                 
-                if($assignmentModel->status == 1 || $assignmentModel->status == 2)
-                //if(isset($assignmentModel->status))
+                if($assignmentModel->status == 1 || $assignmentModel->status == 2)                
                 {                                      
                    $assignmentModel->save();                   
                 }
@@ -210,6 +212,16 @@ class IssueController extends Controller
         ]);
     }
 
+    public  function actionValidate($id)
+    {
+         $model = $id===null ? new Issue() : Issue::findOne($id);
+         if (Yii::$app->request->isAjax && $model->load(Yii::$app->request->post())) {
+
+            Yii::$app->response->format = Response::FORMAT_JSON;
+            return ActiveForm::validate($model);
+        }
+    }
+    
     /**
      * Deletes an existing Issue model.
      * If deletion is successful, the browser will be redirected to the 'index' page.
@@ -239,4 +251,6 @@ class IssueController extends Controller
 
         throw new NotFoundHttpException(Yii::t('app', 'The requested page does not exist.'));
     }
+    
+    
 }
